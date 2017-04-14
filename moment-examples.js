@@ -7,7 +7,7 @@ console.log(now.format('x'));   // milli-seconds
 console.log(now.valueOf());   // milli-seconds as number
 
 var timestamp = 1492161625796;
-var timestampMoment = moment.utc(timestamp).local();    // GMT
+var timestampMoment = moment.utc().local();    // GMT if no 'local()'
 
 console.log(timestampMoment.format('h:mm a'));
 
