@@ -10,6 +10,30 @@ app.use(express.static(__dirname + '/public'));
 // Save users' information for further use if data not passed in given callback function
 var clientInfo = {};
 
+// Sends current users to provided socket
+function sendCurrentUsers(socket){
+    var userData = clientInfo[socket.id];
+    var users = [];
+    
+    if(typeof userData === 'undefined'){
+        return;
+    }
+    
+    Object.keys(clientInfo).forEach(function(socketId){
+        var info = clientInfo[socketId];
+        if(info.room === userData.room){
+            users.push(info.name);
+        }
+    });
+    
+    // Sends to requesting socket only
+    socket.emit('message', {
+        name: 'System',
+        text: 'Current users: ' + users.join(', '),
+        timestamp: moment().valueOf()
+    });
+}
+
 io.on('connection', function (socket) {
     console.log('User connected via socket.io!');
     
@@ -40,10 +64,15 @@ io.on('connection', function (socket) {
     socket.on('message', function (message) {
         console.log('Message received: ' + message.text);
         
-        message.timestamp = moment().valueOf();
-        // Sends to everybody but the person who sends it (if sender included: io.emit)
-        // socket.broadcast.emit('message', message);
-        io.to(clientInfo[socket.id].room).emit('message', message);
+        // Allow for special commands
+        if(message.text === '@currentUsers'){
+            sendCurrentUsers(socket);
+        } else {
+            message.timestamp = moment().valueOf();
+            // Sends to everybody but the person who sends it (if sender included: io.emit)
+            // socket.broadcast.emit('message', message);
+            io.to(clientInfo[socket.id].room).emit('message', message);
+        }
     });
     
     socket.emit('message', {
