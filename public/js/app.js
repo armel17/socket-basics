@@ -2,8 +2,18 @@ var socket = io();
 var name = getQueryVariable('name') || 'Anonymous';
 var room = getQueryVariable('room');
 
+console.log(name + ' wants to join ' + room);
+
+// Update room name
+$('.room-title').text(room);
+
 socket.on('connect', function () {
     console.log('Connected to socket.io server!');
+    // Connect to a specific sockets.io room by emitting the information to the server
+    socket.emit('joinRoom', {
+        name: name,
+        room: room
+    });
 });
 
 socket.on('message', function (message) {
